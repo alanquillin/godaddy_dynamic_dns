@@ -41,9 +41,6 @@ endif
 # dependency targets
 
 depends: 
-	$(POETRY_VARS) $(POETRY) install --no-dev --no-root
-
-dev-depends: 
 	$(POETRY_VARS) $(POETRY) install --no-root
 
 update-depends:
@@ -60,7 +57,7 @@ endif
 
 # dev
 
-build-dev: dev-depends
+build-dev: depends
 	$(DOCKER) build $(DOCKER_BUILD_ARGS) -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG_DEV) .
 
 # Targets for publishing containers
@@ -75,12 +72,12 @@ run-dev: build-dev
 
 # Testing and Syntax targets
 
-lint: dev-depends
+lint: depends
 	$(ISORT) --check-only godaddy_dynamic_dns
 	$(PYLINT) godaddy_dynamic_dns
 	$(BLACK) --check godaddy_dynamic_dns
 
-format: dev-depends
+format: depends
 	$(ISORT) godaddy_dynamic_dns
 	$(BLACK) godaddy_dynamic_dns
 

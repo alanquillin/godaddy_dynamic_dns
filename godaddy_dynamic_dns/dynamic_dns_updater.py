@@ -46,12 +46,15 @@ class DynamicDNSUpdater(object):
         url = self.build_url()
         payload = [record | {'data': new_ip}]
         self.logger.info("Updating record: %s, Data: %s", url, payload)
+
+        if self.dry_run:
+            self.logger.info("This is a dry run, skipping updating record.")
+            return
+
         r = requests.put(url, headers=self.headers, json=payload)
 
         if not r.status_code == 200:
-            raise Exception('Error occured when updating current ip.  '
-                            'Status code: %s, Data: %s' % (r.status_code,
-                                                           r.text))
+            self.logger.error('Error occurred when updating current record. Status code: %s, Data: %s', r.status_code, r.text)
 
     def run(self):
         current_record = self.get_current_record()
@@ -66,10 +69,7 @@ class DynamicDNSUpdater(object):
 
         if not current_ip == public_ip:
             self.logger.info('IP addresses do not match, updating record...')
-            if self.dry_run:
-                self.logger.info("This is a dry run, skipping updating record.")
-            else:
-                self.update_current_ip(current_record, public_ip)
-                self.logger.info('Record update complete!')
+            self.update_current_ip(current_record, public_ip)
+            self.logger.info('Record update complete!')
         else:
             self.logger.info('IP addresses match!! No action needed')
